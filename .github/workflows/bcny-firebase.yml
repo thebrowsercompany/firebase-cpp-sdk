@@ -52,3 +52,37 @@ jobs:
         with:
           name: firebase-windows-amd64
           path: ${{ github.workspace }}/BuildRoot/Library/firebase
+
+      - run: |
+          echo build_tag=$(date +%Y%m%d.$(date +%-H/6 | bc)) >> ${GITHUB_ENV}
+
+      - uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ env.build_tag }}
+          tag_name: ${{ env.build_tag }}
+
+      - name: nuget package
+        run: |
+          $treeish = git log -1 --format=%h
+          nuget pack -Properties DESTDIR=${{ github.workspace }}/BuildRoot/Library/firebase -Version 0.0.0.0-${treeish} ${{ github.workspace }}/SourceCache/firebase-cpp-sdk/firebase.nuspec
+        shell: pwsh
+
+      - name: publish nuget
+        env:
+          GITHUB_TOKEN: ${{ secrets.NUGET_TOKEN }}
+          GITHUB_USERNAME: thebrowsercompany-bot2
+          NUGET_SOURCE_NAME: TheBrowserCompany
+          NUGET_PUBLISH_URL: https://nuget.pkg.github.com/thebrowsercompany/index.json
+        run: |
+          nuget sources list | findstr "%NUGET_SOURCE_NAME%"
+          if errorlevel 0 ( nuget sources remove -name %NUGET_SOURCE_NAME% )
+          nuget sources Add -Name %NUGET_SOURCE_NAME% -Source %NUGET_PUBLISH_URL% -username %GITHUB_USERNAME% -password %GITHUB_TOKEN% -StorePasswordInClearText
+          nuget setApiKey %GITHUB_TOKEN% -Source %NUGET_PUBLISH_URL%
+          nuget push %GITHUB_WORKSPACE%\*.nupkg -Source %NUGET_SOURCE_NAME%
+        shell: cmd
+
