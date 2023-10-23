@@ -41,10 +41,7 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           command: |
-            python scripts/gha/install_prereqs_desktop.py --gha_build --arch 'x64'
-
-      # - name: Install absl-py
-      #   run: pip install absl-py
+            python scripts/gha/install_prereqs_desktop.py --gha_build --arch ${{ matrix.platform }}
 
       - name: Configure firebase
         run:
