@@ -39,6 +39,9 @@ jobs:
       - name: Install absl-py
         run: pip install absl-py
 
+      - name: Remove Strawberry
+        run: "rm -r C:\\Strawberry"
+
       - name: Configure firebase
         run:
           cmake -B ${{ github.workspace }}/BinaryCache/firebase `
