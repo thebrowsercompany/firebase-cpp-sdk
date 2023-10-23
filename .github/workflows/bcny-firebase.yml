@@ -39,14 +39,6 @@ jobs:
       - name: Install absl-py
         run: pip install absl-py
 
-      # - name: Install Desktop SDK prerequisites
-      #   uses: nick-invision/retry@v2
-      #   with:
-      #     timeout_minutes: 15
-      #     max_attempts: 3
-      #     command: |
-      #       python scripts/gha/install_prereqs_desktop.py --gha_build --arch ${{ matrix.platform }}
-
       - name: Configure firebase
         run:
           cmake -B ${{ github.workspace }}/BinaryCache/firebase `
@@ -62,7 +54,7 @@ jobs:
                 -D FIREBASE_INCLUDE_AUTH=YES `
                 -D FIREBASE_INCLUDE_FIRESTORE=YES `
                 -D FIREBASE_USE_BORINGSSL=YES `
-                -D MSVC_RUNTIME_LIBRARY_STATIC=NO `
+                -D MSVC_RUNTIME_LIBRARY_STATIC=NO
 
       - name: List structure
         run: dir .
