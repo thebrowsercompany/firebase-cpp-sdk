@@ -19,8 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 1
-          path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
+          submodules: true
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
 
@@ -42,7 +41,7 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           command: |
-            python ${{ github.workspace }}/SourceCache/firebase-cpp-sdk/scripts/gha/install_prereqs_desktop.py --gha_build --arch 'x64'
+            python scripts/gha/install_prereqs_desktop.py --gha_build --arch 'x64'
 
       # - name: Install absl-py
       #   run: pip install absl-py
@@ -55,7 +54,7 @@ jobs:
                 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/firebase/usr `
                 -G "Visual Studio 17 2022" `
                 -A ${{ matrix.platform }} `
-                -S ${{ github.workspace }}/SourceCache/firebase-cpp-sdk `
+                -S . `
                 -D FIREBASE_CPP_BUILD_PACKAGE=YES `
                 -D FIREBASE_GITHUB_ACTION_BUILD=YES `
                 -D FIREBASE_INCLUDE_LIBRARY_DEFAULT=OFF `
