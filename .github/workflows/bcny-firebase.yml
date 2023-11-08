@@ -19,8 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 1
-          path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
 
@@ -38,27 +36,14 @@ jobs:
 
       - name: Run Python Setup
         run: |
-          python3 -m pip install -r ${{ github.workspace }}/SourceCache/firebase-cpp-sdk/external/pip_requirements.txt --user
+          python3 -m pip install -r .\external\pip_requirements.txt --user
 
       - name: Remove Strawberry
         run: "rm -r C:\\Strawberry"
 
-      - name: Configure firebase
+      - name: Build SDK
         run:
-          cmake -B ${{ github.workspace }}/BinaryCache/firebase `
-                -D BUILD_SHARED_LIBS=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/firebase/usr `
-                -G "Visual Studio 17 2022" `
-                -A ${{ matrix.platform }} `
-                -S ${{ github.workspace }}/SourceCache/firebase-cpp-sdk `
-                -D FIREBASE_CPP_BUILD_PACKAGE=YES `
-                -D FIREBASE_GITHUB_ACTION_BUILD=YES `
-                -D FIREBASE_INCLUDE_LIBRARY_DEFAULT=OFF `
-                -D FIREBASE_INCLUDE_AUTH=YES `
-                -D FIREBASE_INCLUDE_FIRESTORE=YES `
-                -D FIREBASE_USE_BORINGSSL=YES `
-                -D MSVC_RUNTIME_LIBRARY_STATIC=NO
+          puthon3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --gha_build
 
       - name: List structure
         run: dir .
