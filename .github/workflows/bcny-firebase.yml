@@ -41,22 +41,23 @@ jobs:
 
       - name: Build SDK
         run:
-          python3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --gha_build
+          python3 .\scripts\gha\build_desktop.py `
+          --arch "${{ matrix.arch }}" `
+          --config "Release" `
+          --msvc_runtime_library "dynamic" `
+          --target firebase_app firebase_auth firebase_firestore `
+          --gha_build `
 
-      - name: List structure
-        run: dir .
-      - name: Build firebase
-        run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release
-      - name: Install firebase
-        run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release --target install
       - name: Install firebase (manual)
         run: |
-          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/firestore_errors.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/firestore_errors.h"
-          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/geo_point.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/geo_point.h"
-          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/timestamp.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/timestamp.h"
+          New-Item -ItemType Directory -Path ${{ github.workspace }}/BuildRoot/Library/firebase/usr
+
+          Copy-Item "${{ github.workspace }}/build/external/src/firestore/Firestore/core/include/firebase/firestore/firestore_errors.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/firestore_errors.h"
+          Copy-Item "${{ github.workspace }}/build/external/src/firestore/Firestore/core/include/firebase/firestore/geo_point.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/geo_point.h"
+          Copy-Item "${{ github.workspace }}/build/external/src/firestore/Firestore/core/include/firebase/firestore/timestamp.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/timestamp.h"
 
           Write-Host "Copying static libraries ..."
-          $source = "${{ github.workspace }}/BinaryCache/firebase"
+          $source = "${{ github.workspace }}/build"
           $libraries = Get-ChildItem -Path $source -File -Recurse -Filter *.lib
           foreach ($library in $libraries) {
             $destination = Join-Path -Path "${{ github.workspace }}/BuildRoot/Library/firebase/usr/libs/windows" -ChildPath $library.Name
