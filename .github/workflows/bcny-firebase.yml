@@ -3,6 +3,9 @@ name: firebase
 on:
   workflow_dispatch:
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
 jobs:
   windows:
     runs-on: windows-latest
