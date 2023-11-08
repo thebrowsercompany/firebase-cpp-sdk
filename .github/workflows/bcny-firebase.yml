@@ -43,15 +43,10 @@ jobs:
         run:
           python3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --target firebase_app firebase_auth firebase_firestore --gha_build
 
-      - name: Start SSH session
-        uses: luchihoratiu/debug-via-ssh@main
-        with:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-          SSH_PASS: ${{ secrets.SSH_PASS }}
-
       - name: Install firebase (manual)
         run: |
-          New-Item -ItemType Directory -Path ${{ github.workspace }}/BuildRoot/Library/firebase/usr
+          New-Item -ItemType Directory -Path ${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore
+          New-Item -ItemType Directory -Path ${{ github.workspace }}/BuildRoot/Library/firebase/usr/libs/windows
 
           Copy-Item "${{ github.workspace }}/build/external/src/firestore/Firestore/core/include/firebase/firestore/firestore_errors.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/firestore_errors.h"
           Copy-Item "${{ github.workspace }}/build/external/src/firestore/Firestore/core/include/firebase/firestore/geo_point.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/geo_point.h"
