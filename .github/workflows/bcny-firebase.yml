@@ -21,15 +21,8 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
-
-      # - uses: compnerd/gha-setup-vsdevenv@main
-      #   with:
-      #     host_arch: amd64
-      #     components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-      #     arch: ${{ matrix.arch }}
 
       - uses: actions/setup-python@v4
         id: python
@@ -39,53 +32,36 @@ jobs:
 
       - name: Run Python Setup
         run: |
-          python3 -m pip install -r ${{ github.workspace }}/SourceCache/firebase-cpp-sdk/external/pip_requirements.txt --user
+          python3 -m pip install -r .\external\pip_requirements.txt --user
 
       - name: Remove Strawberry
         run: "rm -r C:\\Strawberry"
 
       - name: Build SDK
         run:
-          python3 ${{ github.workspace }}/SourceCache/firebase-cpp-sdk/scripts/gha/build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --gha_build
-
-      - name: Configure firebase
-        run:
-          cmake -B ${{ github.workspace }}/BinaryCache/firebase `
-                -D BUILD_SHARED_LIBS=NO `
-                -D CMAKE_BUILD_TYPE=Release `
-                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/firebase/usr `
-                -G "Visual Studio 17 2022" `
-                -A ${{ matrix.platform }} `
-                -S ${{ github.workspace }}/SourceCache/firebase-cpp-sdk `
-                -D FIREBASE_CPP_BUILD_PACKAGE=YES `
-                -D FIREBASE_GITHUB_ACTION_BUILD=YES `
-                -D FIREBASE_INCLUDE_LIBRARY_DEFAULT=OFF `
-                -D FIREBASE_INCLUDE_AUTH=YES `
-                -D FIREBASE_INCLUDE_FIRESTORE=YES `
-                -D FIREBASE_USE_BORINGSSL=YES `
-                -D MSVC_RUNTIME_LIBRARY_STATIC=NO
+          python3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --gha_build
 
       - name: List structure
         run: dir .
-      - name: Build firebase
-        run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release
-      - name: Install firebase
-        run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release --target install
-      - name: Install firebase (manual)
-        run: |
-          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/firestore_errors.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/firestore_errors.h"
-          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/geo_point.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/geo_point.h"
-          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/timestamp.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/timestamp.h"
+      # - name: Build firebase
+      #   run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release
+      # - name: Install firebase
+      #   run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release --target install
+      # - name: Install firebase (manual)
+      #   run: |
+      #     Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/firestore_errors.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/firestore_errors.h"
+      #     Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/geo_point.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/geo_point.h"
+      #     Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/timestamp.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/timestamp.h"
 
-          Write-Host "Copying static libraries ..."
-          $source = "${{ github.workspace }}/BinaryCache/firebase"
-          $libraries = Get-ChildItem -Path $source -File -Recurse -Filter *.lib
-          foreach ($library in $libraries) {
-            $destination = Join-Path -Path "${{ github.workspace }}/BuildRoot/Library/firebase/usr/libs/windows" -ChildPath $library.Name
-            Copy-Item -Path $library.FullName -Destination $destination -Force
-            Write-Host "... copied ${destination}"
-          }
-      - uses: actions/upload-artifact@v3
-        with:
-          name: firebase-windows-${{ matrix.arch }}
-          path: ${{ github.workspace }}/BuildRoot/Library/firebase
+      #     Write-Host "Copying static libraries ..."
+      #     $source = "${{ github.workspace }}/BinaryCache/firebase"
+      #     $libraries = Get-ChildItem -Path $source -File -Recurse -Filter *.lib
+      #     foreach ($library in $libraries) {
+      #       $destination = Join-Path -Path "${{ github.workspace }}/BuildRoot/Library/firebase/usr/libs/windows" -ChildPath $library.Name
+      #       Copy-Item -Path $library.FullName -Destination $destination -Force
+      #       Write-Host "... copied ${destination}"
+      #     }
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     name: firebase-windows-${{ matrix.arch }}
+      #     path: ${{ github.workspace }}/BuildRoot/Library/firebase
