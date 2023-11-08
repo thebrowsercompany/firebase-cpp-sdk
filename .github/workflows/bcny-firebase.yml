@@ -41,12 +41,7 @@ jobs:
 
       - name: Build SDK
         run:
-          python3 .\scripts\gha\build_desktop.py `
-          --arch "${{ matrix.arch }}" `
-          --config "Release" `
-          --msvc_runtime_library "dynamic" `
-          --target firebase_app firebase_auth firebase_firestore `
-          --gha_build `
+          python3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --target firebase_app firebase_auth firebase_firestore --gha_build
 
       - name: Start SSH session
         uses: luchihoratiu/debug-via-ssh@main
