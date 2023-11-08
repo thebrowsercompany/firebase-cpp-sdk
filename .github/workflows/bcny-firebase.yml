@@ -22,24 +22,19 @@ jobs:
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
 
-      - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: ${{ matrix.arch }}
-
       - uses: actions/setup-python@v4
         id: python
         with:
           python-version: 3.7
           architecture: 'x64'
 
-      - name: Run Python Setup
-        run: |
-          python3 -m pip install -r .\external\pip_requirements.txt --user
-
-      - name: Remove Strawberry
-        run: "rm -r C:\\Strawberry"
+      - name: Install Desktop SDK prerequisites
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          command: |
+            python scripts/gha/install_prereqs_desktop.py --gha_build --arch '${{ matrix.arch }}'
 
       - name: Build SDK
         run:
