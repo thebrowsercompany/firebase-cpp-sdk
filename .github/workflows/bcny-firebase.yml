@@ -43,7 +43,7 @@ jobs:
 
       - name: Build SDK
         run:
-          puthon3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --gha_build
+          python3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --gha_build
 
       - name: List structure
         run: dir .
