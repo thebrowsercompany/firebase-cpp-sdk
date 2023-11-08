@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-python@v4
         id: python
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.intentionally_broken_like_upstream }}
           architecture: 'x64'
 
       - name: Install Desktop SDK prerequisites
