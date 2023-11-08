@@ -25,16 +25,16 @@ jobs:
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
 
-      - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: ${{ matrix.arch }}
+      # - uses: compnerd/gha-setup-vsdevenv@main
+      #   with:
+      #     host_arch: amd64
+      #     components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+      #     arch: ${{ matrix.arch }}
 
       - uses: actions/setup-python@v4
         id: python
         with:
-          python-version: 3.9
+          python-version: 3.7
           architecture: 'x64'
 
       - name: Run Python Setup
