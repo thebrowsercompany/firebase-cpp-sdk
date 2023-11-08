@@ -1,5 +1,8 @@
 name: firebase
 
+env:
+  GITHUB_TOKEN: ${{ github.token }}
+
 on:
   workflow_dispatch:
 
