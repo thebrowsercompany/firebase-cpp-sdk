@@ -45,6 +45,7 @@ jobs:
         run: "rm -r C:\\Strawberry"
 
       - name: Configure firebase
+        shell: bash
         run:
           cmake -B ${{ github.workspace }}/BinaryCache/firebase `
                 -D BUILD_SHARED_LIBS=NO `
