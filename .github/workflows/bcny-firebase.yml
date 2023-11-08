@@ -36,8 +36,9 @@ jobs:
           python-version: 3.7
           architecture: 'x64'
 
-      - name: Install absl-py
-        run: pip install absl-py
+      - name: Run Python Setup
+        run: |
+          python3 -m pip install -r ${{ github.workspace }}/SourceCache/firebase-cpp-sdk/external/pip_requirements.txt --user
 
       - name: Remove Strawberry
         run: "rm -r C:\\Strawberry"
