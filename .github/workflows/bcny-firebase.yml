@@ -30,12 +30,6 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: actions/setup-python@v4
-        id: python
-        with:
-          python-version: 3.9
-          architecture: 'x64'
-
       - name: Install absl-py
         run: pip install absl-py
 
