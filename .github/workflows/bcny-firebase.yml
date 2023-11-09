@@ -37,11 +37,14 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           command: |
-            python scripts/gha/install_prereqs_desktop.py --gha_build --arch '${{ matrix.arch }}'
+            python3 scripts/gha/install_prereqs_desktop.py --gha_build --arch '${{ matrix.arch }}'
 
       - name: Build SDK
         run:
-          python3 .\scripts\gha\build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --target firebase_app firebase_auth firebase_firestore --gha_build
+          python3 scripts/gha/build_desktop.py --arch "${{ matrix.arch }}" --config "Release" --msvc_runtime_library "dynamic" --target firebase_app firebase_auth firebase_firestore --gha_build --verbose
+
+      - name: Install firebase
+        run: cmake --build ${{ github.workspace }}/build --config Release --target install
 
       - name: Install firebase (manual)
         run: |
