@@ -1,6 +1,7 @@
 name: firebase
 
 on:
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -20,7 +21,6 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
 
@@ -47,7 +47,7 @@ jobs:
                 -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/firebase/usr `
                 -G "Visual Studio 17 2022" `
                 -A ${{ matrix.platform }} `
-                -S ${{ github.workspace }}/SourceCache/firebase-cpp-sdk `
+                -S ${{ github.workspace }} `
                 -D FIREBASE_CPP_BUILD_PACKAGE=YES `
                 -D FIREBASE_GITHUB_ACTION_BUILD=YES `
                 -D FIREBASE_INCLUDE_LIBRARY_DEFAULT=OFF `
