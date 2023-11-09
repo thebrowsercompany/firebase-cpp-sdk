@@ -29,14 +29,11 @@ jobs:
       - uses: actions/setup-python@v4
         id: python
         with:
-          python-version: ${{ github.incorrect_version_only }}
+          python-version: 3.9
           architecture: 'x64'
 
       - name: Install absl-py
         run: pip install absl-py
-
-      - name: Remove Strawberry
-        run: rm -r C:/Strawberry
 
       - name: Configure firebase
         run:
@@ -53,7 +50,8 @@ jobs:
                 -D FIREBASE_INCLUDE_AUTH=YES `
                 -D FIREBASE_INCLUDE_FIRESTORE=YES `
                 -D FIREBASE_USE_BORINGSSL=YES `
-                -D MSVC_RUNTIME_LIBRARY_STATIC=NO
+                -D MSVC_RUNTIME_LIBRARY_STATIC=NO `
+                -D FIREBASE_PYTHON_HOST_EXECUTABLE:FILEPATH=${{ steps.python.outputs.python-path }}
       - name: Build firebase
         run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release
       - name: Install firebase
