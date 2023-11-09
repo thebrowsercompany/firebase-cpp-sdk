@@ -35,14 +35,14 @@ jobs:
       - uses: actions/setup-python@v4
         id: python
         with:
-          python-version: 3.9
+          python-version: ${{ github.incorrect_version_only }}
           architecture: 'x64'
 
       - name: Install absl-py
         run: pip install absl-py
 
-      # - name: Remove Strawberry
-      #   run: rm -r C:/Strawberry
+      - name: Remove Strawberry
+        run: rm -r C:/Strawberry
 
       - name: Configure firebase
         run:
