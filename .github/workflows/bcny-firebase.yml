@@ -53,7 +53,7 @@ jobs:
                 -D FIREBASE_INCLUDE_AUTH=YES `
                 -D FIREBASE_INCLUDE_FIRESTORE=YES `
                 -D FIREBASE_USE_BORINGSSL=YES `
-                -D MSVC_RUNTIME_LIBRARY_STATIC=NO `
+                -D MSVC_RUNTIME_LIBRARY_STATIC=NO
       - name: Build firebase
         run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --config Release
       - name: Install firebase
