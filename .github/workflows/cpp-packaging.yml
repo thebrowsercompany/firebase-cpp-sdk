@@ -97,7 +97,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Fetch and build binutils
         run: |
@@ -207,7 +207,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: install prerequisites
         run: sdk-src/build_scripts/ios/install_prereqs.sh
@@ -310,7 +310,7 @@ jobs:
         architecture: ["x64", "x86", "arm64"]
         msvc_runtime: ["static", "dynamic"]
         linux_abi: ["legacy", "c++11"]
-        python_version: [3.7]
+        python_version: [3.8]
         include:
         - os: windows-latest
           vcpkg_triplet_suffix: "windows-static"
@@ -518,7 +518,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Install prerequisites
         run: |
@@ -837,7 +837,7 @@ jobs:
     - name: Setup python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.7'
+        python-version: '3.8'
     - name: Use expanded matrix
       if: github.event_name == 'schedule' || github.event.inputs.use_expanded_matrix == '1'
       run: |
@@ -893,3 +893,34 @@ jobs:
             -s 10 \
             -A ${verbose_flag}
         fi
+
+
+  attempt_retry:
+    name: "attempt-retry"
+    needs: [trigger_integration_tests]
+    runs-on: ubuntu-20.04
+    if: ${{ failure() && !cancelled() && github.event_name == 'schedule' }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Install python deps
+        run: pip install -r scripts/gha/python_requirements.txt
+      # The default token can't run workflows, so get an alternate token.
+      - name: Generate token for GitHub API
+        uses: tibdex/github-app-token@v1
+        id: generate-token
+        with:
+          app_id: ${{ secrets.WORKFLOW_TRIGGER_APP_ID }}
+          private_key: ${{ secrets.WORKFLOW_TRIGGER_APP_PRIVATE_KEY }}
+      - name: Retry failed tests
+        run: |
+          echo "::warning ::Attempting to retry failed jobs"
+          python scripts/gha/trigger_workflow.py -t ${{ steps.generate-token.outputs.token }} \
+          -w retry-test-failures.yml \
+          -p run_id ${{ github.run_id }} \
+          -s 10 \
+          -A

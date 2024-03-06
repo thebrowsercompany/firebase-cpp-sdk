@@ -18,7 +18,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.3.3'
+    classpath 'com.android.tools.build:gradle:4.2.1'
     classpath 'com.google.gms:google-services:4.2.0'
   }
 }
@@ -32,7 +32,12 @@ allprojects {
 apply plugin: 'com.android.library'
 
 android {
-  compileSdkVersion 28
+  compileOptions {
+    sourceCompatibility 1.8
+    targetCompatibility 1.8
+  }
+
+  compileSdkVersion 33
 
   sourceSets {
     main {
@@ -45,9 +50,10 @@ android {
 }
 
 dependencies {
-  implementation platform('com.google.firebase:firebase-bom:32.2.2')
+  implementation platform('com.google.firebase:firebase-bom:32.7.2')
   implementation 'com.google.firebase:firebase-analytics'
-  implementation 'com.google.android.gms:play-services-ads:22.2.0'
+  implementation 'com.google.android.gms:play-services-ads:22.6.0'
+  implementation 'com.google.android.ump:user-messaging-platform:2.2.0'
 }
 
 afterEvaluate {

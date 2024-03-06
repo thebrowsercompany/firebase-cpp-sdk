@@ -79,10 +79,18 @@ Future<AdResult> NativeAd::LoadAdLastResult() const {
   return internal_->GetLoadAdLastResult();
 }
 
+void NativeAd::SetAdListener(AdListener* listener) {
+  internal_->SetAdListener(listener);
+}
+
 const NativeAdImage& NativeAd::icon() const { return internal_->icon(); }
 
 const std::vector<NativeAdImage>& NativeAd::images() const {
   return internal_->images();
+}
+
+const NativeAdImage& NativeAd::adchoices_icon() const {
+  return internal_->adchoices_icon();
 }
 
 Future<void> NativeAd::RecordImpression(const Variant& impression_data) {

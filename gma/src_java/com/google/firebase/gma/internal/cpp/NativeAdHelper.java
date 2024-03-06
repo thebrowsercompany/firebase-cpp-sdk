@@ -98,7 +98,7 @@ public class NativeAdHelper {
     });
   }
 
-  /** Disconnect the helper from the interstital ad. */
+  /** Disconnect the helper from the native ad. */
   public void disconnect() {
     synchronized (mNativeLock) {
       mNativeAdInternalPtr = CPP_NULLPTR;
@@ -247,9 +247,55 @@ public class NativeAdHelper {
           NativeAd.Image[] imgArray = new NativeAd.Image[imgList.size()];
           imgArray = imgList.toArray(imgArray);
 
+          NativeAd.Image adChoicesIcon = null;
+          NativeAd.AdChoicesInfo adChoicesInfo = ad.getAdChoicesInfo();
+          if (adChoicesInfo != null) {
+            List<NativeAd.Image> adChoicesImgList = adChoicesInfo.getImages();
+            if (!adChoicesImgList.isEmpty()) {
+              // Gets only the first image to keep the api in sync with its ios counterpart.
+              adChoicesIcon = adChoicesImgList.get(0);
+            }
+          }
+
           completeNativeLoadedAd(mLoadAdCallbackDataPtr, mNativeAdInternalPtr, ad.getIcon(),
-              imgArray, ad.getResponseInfo());
+              imgArray, adChoicesIcon, ad.getResponseInfo());
           mLoadAdCallbackDataPtr = CPP_NULLPTR;
+        }
+      }
+    }
+
+    @Override
+    public void onAdClicked() {
+      synchronized (mNativeLock) {
+        if (mNativeAdInternalPtr != CPP_NULLPTR) {
+          notifyAdClicked(mNativeAdInternalPtr);
+        }
+      }
+    }
+
+    @Override
+    public void onAdImpression() {
+      synchronized (mNativeLock) {
+        if (mNativeAdInternalPtr != CPP_NULLPTR) {
+          notifyAdImpression(mNativeAdInternalPtr);
+        }
+      }
+    }
+
+    @Override
+    public void onAdClosed() {
+      synchronized (mNativeLock) {
+        if (mNativeAdInternalPtr != CPP_NULLPTR) {
+          notifyAdClosed(mNativeAdInternalPtr);
+        }
+      }
+    }
+
+    @Override
+    public void onAdOpened() {
+      synchronized (mNativeLock) {
+        if (mNativeAdInternalPtr != CPP_NULLPTR) {
+          notifyAdOpened(mNativeAdInternalPtr);
         }
       }
     }
@@ -262,7 +308,7 @@ public class NativeAdHelper {
   /** Native callback invoked upon successfully loading an ad. */
   public static native void completeNativeLoadedAd(long nativeInternalPtr,
       long mNativeAdInternalPtr, NativeAd.Image icon, NativeAd.Image[] images,
-      ResponseInfo responseInfo);
+      NativeAd.Image adChoicesIcon, ResponseInfo responseInfo);
 
   /**
    * Native callback upon encountering an error loading an Ad Request. Returns Android Google Mobile
@@ -277,4 +323,16 @@ public class NativeAdHelper {
    */
   public static native void completeNativeLoadAdInternalError(
       long nativeInternalPtr, int gmaErrorCode, String errorMessage);
+
+  /** Native callback to notify the C++ wrapper of an ad clicked event */
+  public static native void notifyAdClicked(long nativeInternalPtr);
+
+  /** Native callback to notify the C++ wrapper of an ad closed event */
+  public static native void notifyAdClosed(long nativeInternalPtr);
+
+  /** Native callback to notify the C++ wrapper of an ad impression event */
+  public static native void notifyAdImpression(long nativeInternalPtr);
+
+  /** Native callback to notify the C++ wrapper of an ad opened event */
+  public static native void notifyAdOpened(long nativeInternalPtr);
 }

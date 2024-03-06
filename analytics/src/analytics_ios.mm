@@ -164,6 +164,12 @@ void SetConsent(const std::map<ConsentType, ConsentStatus>& consent_settings) {
       case kConsentTypeAnalyticsStorage:
         consent_type = FIRConsentTypeAnalyticsStorage;
         break;
+      case kConsentTypeAdUserData:
+        consent_type = FIRConsentTypeAdUserData;
+        break;
+      case kConsentTypeAdPersonalization:
+        consent_type = FIRConsentTypeAdPersonalization;
+        break;
       default:
         LogError("Unknown ConsentType value: %d", it->first);
         return;
@@ -264,6 +270,14 @@ void LogEvent(const char* name, const Parameter* parameters, size_t number_of_pa
 void InitiateOnDeviceConversionMeasurementWithEmailAddress(const char* email_address) {
   FIREBASE_ASSERT_RETURN_VOID(internal::IsInitialized());
   [FIRAnalytics initiateOnDeviceConversionMeasurementWithEmailAddress:@(email_address)];
+}
+
+/// Initiates on-device conversion measurement given a phone number on iOS (no-op on
+/// Android). On iOS, requires dependency GoogleAppMeasurementOnDeviceConversion to be linked
+/// in, otherwise it is a no-op.
+void InitiateOnDeviceConversionMeasurementWithPhoneNumber(const char* phone_number) {
+  FIREBASE_ASSERT_RETURN_VOID(internal::IsInitialized());
+  [FIRAnalytics initiateOnDeviceConversionMeasurementWithPhoneNumber:@(phone_number)];
 }
 
 // Set a user property to the given value.

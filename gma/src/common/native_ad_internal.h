@@ -61,6 +61,15 @@ class NativeAdInternal {
   // Retrieves the most recent AdResult future for the LoadAd function.
   Future<AdResult> GetLoadAdLastResult();
 
+  // Sets an AdListener for this ad view.
+  virtual void SetAdListener(AdListener* listener);
+
+  // Notifies the Ad listener (if one exists) that an event has occurred.
+  void NotifyListenerAdClicked();
+  void NotifyListenerAdClosed();
+  void NotifyListenerAdImpression();
+  void NotifyListenerAdOpened();
+
   // Returns true if the NativeAd has been initialized.
   virtual bool is_initialized() const = 0;
 
@@ -69,6 +78,9 @@ class NativeAdInternal {
 
   // Returns the associated image assets of the native ad.
   const std::vector<NativeAdImage>& images() const { return images_; }
+
+  // Returns the associated icon asset of the native ad.
+  const NativeAdImage& adchoices_icon() const { return adchoices_icon_; }
 
   // Only used by allowlisted ad units.
   virtual Future<void> RecordImpression(const Variant& impression_data) = 0;
@@ -86,7 +98,8 @@ class NativeAdInternal {
   explicit NativeAdInternal(NativeAd* base);
 
   // Invoked after a native ad has been loaded to fill native ad image assets.
-  void insert_image(const NativeAdImage& ad_image, const bool& is_icon);
+  void insert_image(const NativeAdImage& ad_image,
+                    const std::string& image_type);
 
   // Invoked before filling native ad image assets.
   void clear_existing_images();
@@ -97,11 +110,20 @@ class NativeAdInternal {
   // Future data used to synchronize asynchronous calls.
   FutureData future_data_;
 
+  // Listener for NativeAd Lifecycle event callbacks.
+  AdListener* ad_listener_;
+
   // Tracks the native ad icon asset.
   NativeAdImage icon_;
 
   // Tracks the native ad image assets.
   std::vector<NativeAdImage> images_;
+
+  // Tracks the native ad choices icon asset.
+  NativeAdImage adchoices_icon_;
+
+  // Lock object for accessing ad_listener_.
+  Mutex listener_mutex_;
 };
 
 }  // namespace internal
