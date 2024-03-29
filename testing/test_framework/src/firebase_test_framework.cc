@@ -14,12 +14,18 @@
 
 #include "firebase_test_framework.h"  // NOLINT
 
+#include <inttypes.h>
+
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "firebase/future.h"
+
+using app_framework::LogDebug;
 
 namespace firebase {
 namespace internal {
@@ -126,10 +132,10 @@ bool FirebaseTest::RunFlakyBlockBase(bool (*flaky_block)(void* context),
 
 firebase::FutureBase FirebaseTest::RunWithRetryBase(
     firebase::FutureBase (*run_future)(void* context), void* context,
-    const char* name, int expected_error) {
+    const char* name, std::vector<int> expected_errors) {
   // Run run_future(context), which returns a Future, then wait for that Future
-  // to complete. If the Future returns Invalid, or if its error() does
-  // not match expected_error, pause a moment and try again.
+  // to complete. If the Future returns Invalid, or if its error() is
+  // not present in expected_errors, pause a moment and try again.
   //
   // In most cases, this will return the Future once it's been completed.
   // However, if it reaches the last attempt, it will return immediately once
@@ -139,6 +145,10 @@ firebase::FutureBase FirebaseTest::RunWithRetryBase(
                                 100, 1000, 5000, 10000, 30000};
   const int kNumAttempts =
       1 + (sizeof(kRetryDelaysMs) / sizeof(kRetryDelaysMs[0]));
+
+  if (expected_errors.empty()) {
+    expected_errors.push_back(0);
+  }
 
   int attempt = 0;
   firebase::FutureBase future;
@@ -158,10 +168,14 @@ firebase::FutureBase FirebaseTest::RunWithRetryBase(
       app_framework::LogDebug(
           "RunWithRetry%s%s: Attempt %d returned invalid status",
           *name ? " " : "", name, attempt + 1);
-    } else if (future.error() != expected_error) {
+    } else if (std::find(expected_errors.begin(), expected_errors.end(),
+                         future.error()) == std::end(expected_errors)) {
+      std::string expected_errors_str =
+          VariantToString(firebase::Variant(expected_errors));
       app_framework::LogDebug(
-          "RunWithRetry%s%s: Attempt %d returned error %d, expected %d",
-          *name ? " " : "", name, attempt + 1, future.error(), expected_error);
+          "RunWithRetry%s%s: Attempt %d returned error %d, expected one of %s",
+          *name ? " " : "", name, attempt + 1, future.error(),
+          expected_errors_str.c_str());
     } else {
       // Future is completed and the error matches what's expected, no need to
       // retry further.
@@ -178,18 +192,24 @@ firebase::FutureBase FirebaseTest::RunWithRetryBase(
 }
 
 bool FirebaseTest::WaitForCompletion(const firebase::FutureBase& future,
-                                     const char* name, int expected_error) {
+                                     const char* name,
+                                     std::vector<int> expected_errors) {
+  if (expected_errors.empty()) {
+    // If unspecified, default expected error is 0, success.
+    expected_errors.push_back(0);
+  }
   app_framework::LogDebug("WaitForCompletion %s", name);
   while (future.status() == firebase::kFutureStatusPending) {
     app_framework::ProcessEvents(100);
   }
   EXPECT_EQ(future.status(), firebase::kFutureStatusComplete)
       << name << " returned an invalid status.";
-  EXPECT_EQ(future.error(), expected_error)
-      << name << " returned error " << future.error() << ": "
+  EXPECT_THAT(expected_errors, testing::Contains(future.error()))
+      << name << " returned unexpected error " << future.error() << ": "
       << future.error_message();
   return (future.status() == firebase::kFutureStatusComplete &&
-          future.error() == expected_error);
+          std::find(expected_errors.begin(), expected_errors.end(),
+                    future.error()) != std::end(expected_errors));
 }
 
 bool FirebaseTest::WaitForCompletionAnyResult(
@@ -276,6 +296,66 @@ bool FirebaseTest::Base64Encode(const std::string& input, std::string* output) {
 
 bool FirebaseTest::Base64Decode(const std::string& input, std::string* output) {
   return ::firebase::internal::Base64Decode(input, output);
+}
+
+int64_t FirebaseTest::GetCurrentTimeInSecondsSinceEpoch() {
+#if defined(ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+  // Quick and dirty function to retrieve GMT time from worldtimeapi.org
+  // and parse the very simple JSON response to obtain the "unixtime" value.
+  // If any step fails, it will return the local time instead.
+  std::map<std::string, std::string> empty_headers;
+  int response_code = 0;
+  std::string response_body;
+  bool success =
+      SendHttpGetRequest("https://worldtimeapi.org/api/timezone/GMT",
+                         empty_headers, &response_code, &response_body);
+  if (!success || response_code != 200 || response_body.empty()) {
+    LogDebug("GetCurrentTimeInSecondsSinceEpoch: HTTP request failed");
+    return (app_framework::GetCurrentTimeInMicroseconds() / 1000000LL);
+  }
+
+  const char kJsonTag[] = "\"unixtime\":";
+  size_t begin = response_body.find(kJsonTag);
+  if (begin < 0) {
+    LogDebug(
+        "GetCurrentTimeInSecondsSinceEpoch: Can't find unixtime JSON field in "
+        "response: %s",
+        response_body.c_str());
+    return (app_framework::GetCurrentTimeInMicroseconds() / 1000000LL);
+  }
+  begin += strlen(kJsonTag);
+  if (response_body[begin] == ' ') {
+    // Advance past a single space, if present.
+    begin++;
+  }
+
+  size_t end = response_body.find(",", begin);
+  if (end < 0) end = response_body.find("}", begin);
+  if (end < 0) {
+    LogDebug(
+        "GetCurrentTimeInSecondsSinceEpoch: Can't extract unixtime JSON field "
+        "from response: %s",
+        response_body.c_str());
+    return (app_framework::GetCurrentTimeInMicroseconds() / 1000000LL);
+  }
+  std::string time_str = response_body.substr(begin, end - begin);
+  int64_t timestamp = std::stoll(time_str);
+  if (timestamp <= 0) {
+    LogDebug(
+        "GetCurrentTimeInSecondsSinceEpoch: Can't parse unixtime JSON value %s",
+        time_str.c_str());
+    return (app_framework::GetCurrentTimeInMicroseconds() / 1000000LL);
+  }
+  LogDebug("Got remote timestamp: %" PRId64, timestamp);
+  return timestamp;
+#else
+  // On desktop, just return the local time since SendHttpGetRequest is not
+  // implemented.
+  int64_t time_in_microseconds =
+      app_framework::GetCurrentTimeInMicroseconds() / 1000000LL;
+  LogDebug("Got local time: %" PRId64, time_in_microseconds);
+  return (time_in_microseconds);
+#endif
 }
 
 class LogTestEventListener : public testing::EmptyTestEventListener {

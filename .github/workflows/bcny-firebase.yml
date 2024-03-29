@@ -5,6 +5,8 @@ on:
 
 jobs:
   windows:
+    if: false
+
     runs-on: windows-latest
 
     strategy:
@@ -302,3 +304,106 @@ jobs:
           $pkgs = Get-ChildItem -Path com.google.firebase.windows.${{ matrix.arch }}.*.nupkg
           nuget push $pkgs[0].Name -Source ${env:NUGET_SOURCE_URL} -SkipDuplicate
         shell: pwsh
+
+  android:
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: 'aarch64'
+            platform: 'arm64-v8a'
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: ${{ github.workspace }}/SourceCache/flatbuffers
+          ref: 99aa1ef21dd9dc3f9d4fb0eb82f4b59d0bb5e4c5
+          repository: google/flatbuffers
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
+          ref: refs/heads/compnerd/swift
+          repository: thebrowsercompany/firebase-cpp-sdk
+
+      # NOTE(compnerd) we use setup-vsdevenv to get CMake and Ninja into `Path`
+      - uses: compnerd/gha-setup-vsdevenv@main
+        with:
+          host_arch: amd64
+
+      - uses: actions/setup-python@v4
+        id: python
+        with:
+          python-version: 3.9
+          architecture: 'x64'
+
+      - name: Install absl-py
+        run: pip install absl-py
+
+      - name: Configure flatbuffers
+        run:
+          cmake -B ${{ github.workspace }}/BinaryCache/flatbuffers `
+                -D CMAKE_BUILD_TYPE=Release `
+                -G "Visual Studio 17 2022" `
+                -A x64 `
+                -S ${{ github.workspace }}/SourceCache/flatbuffers
+      - name: Build flatc
+        run: cmake --build ${{ github.workspace }}/BinaryCache/flatbuffers --config Release --target flatc
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Configure firebase
+        run: |
+          $ANDROID_NDK_ROOT = cygpath -m $env:ANDROID_NDK
+
+          cmake -B ${{ github.workspace }}/BinaryCache/firebase `
+                -D BUILD_SHARED_LIBS=NO `
+                -D CMAKE_BUILD_TYPE=RelWithDebInfo `
+                -D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/firebase/usr `
+                -D CMAKE_MAKE_PROGRAM=$((Get-Command Ninja).Source) `
+                -D CMAKE_SYSTEM_NAME=Android `
+                -D CMAKE_ANDROID_API=28 `
+                -D CMAKE_ANDROID_ARCH_ABI=${{ matrix.platform }} `
+                -D CMAKE_ANDROID_NDK=$ANDROID_NDK_ROOT `
+                -G Ninja `
+                -S ${{ github.workspace }}/SourceCache/firebase-cpp-sdk `
+                -D FLATBUFFERS_BUILD_FLATC=NO `
+                -D FIREBASE_CPP_BUILD_PACKAGE=YES `
+                -D FIREBASE_GITHUB_ACTION_BUILD=YES `
+                -D FIREBASE_INCLUDE_LIBRARY_DEFAULT=OFF `
+                -D FIREBASE_INCLUDE_AUTH=YES `
+                -D FIREBASE_INCLUDE_FIRESTORE=YES `
+                -D FIREBASE_USE_BORINGSSL=YES `
+                -D FIREBASE_PYTHON_HOST_EXECUTABLE:FILEPATH=${{ steps.python.outputs.python-path }} `
+                -D FLATBUFFERS_FLATC_EXECUTABLE=${{ github.workspace }}/BinaryCache/flatbuffers/Release/flatc.exe
+      - name: Build firebase
+        run: cmake --build ${{ github.workspace }}/BinaryCache/firebase
+      - name: Install firebase
+        run: cmake --build ${{ github.workspace }}/BinaryCache/firebase --target install
+      - name: Install firebase (manual)
+        run: |
+          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/firestore_errors.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/firestore_errors.h"
+          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/geo_point.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/geo_point.h"
+          Copy-Item "${{ github.workspace }}/BinaryCache/firebase/external/src/firestore/Firestore/core/include/firebase/firestore/timestamp.h" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase/firestore/timestamp.h"
+
+          Write-Host "Copying static libraries ..."
+          $source = "${{ github.workspace }}/BinaryCache/firebase"
+          $libraries = Get-ChildItem -Path $source -File -Recurse -Filter *.a
+          foreach ($library in $libraries) {
+            $destination = Join-Path -Path "${{ github.workspace }}/BuildRoot/Library/firebase/usr/libs/android" -ChildPath $library.Name
+            Copy-Item -Path $library.FullName -Destination $destination -Force
+            Write-Host "... copied ${destination}"
+          }
+      - uses: actions/upload-artifact@v3
+        with:
+          name: firebase-android-${{ matrix.arch }}
+          path: ${{ github.workspace }}/BuildRoot/Library/firebase

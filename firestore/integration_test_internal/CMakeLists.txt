@@ -91,6 +91,7 @@ set(FIREBASE_INTEGRATION_TEST_PORTABLE_TEST_SRCS
     # public API are performed.
     src/integration_test.cc
     # Internal tests below.
+    src/aggregate_count_test.cc
     src/aggregate_query_snapshot_test.cc
     src/aggregate_query_test.cc
     src/bundle_test.cc
@@ -99,6 +100,7 @@ set(FIREBASE_INTEGRATION_TEST_PORTABLE_TEST_SRCS
     src/document_change_test.cc
     src/document_reference_test.cc
     src/document_snapshot_test.cc
+    src/filter_test.cc
     src/field_value_test.cc
     src/fields_test.cc
     src/firestore_test.cc
@@ -343,6 +345,7 @@ else()
   # Platform abstraction layer for the desktop integration test.
   set(FIREBASE_APP_FRAMEWORK_DESKTOP_SRCS
     src/desktop/desktop_app_framework.cc
+    src/desktop/desktop_firebase_test_framework.cc
   )
 
   set(integration_test_target_name "integration_test")

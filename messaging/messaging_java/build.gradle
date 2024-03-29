@@ -18,7 +18,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.3.3'
+    classpath 'com.android.tools.build:gradle:4.2.1'
     classpath 'com.google.gms:google-services:4.2.0'
     // This uses Flatbuffers at 1.9 because the 1.10 version added a feature
     // that requires using a newer version of the JDK and at least Android N.
@@ -41,7 +41,11 @@ android {
     sourceCompatibility 1.8
     targetCompatibility 1.8
   }
-  compileSdkVersion 28
+  compileSdkVersion 33
+
+  defaultConfig {
+    minSdkVersion 14
+  }
 
   sourceSets {
     main {
@@ -55,7 +59,7 @@ android {
 }
 
 dependencies {
-  implementation platform('com.google.firebase:firebase-bom:32.2.2')
+  implementation platform('com.google.firebase:firebase-bom:32.7.2')
   implementation 'com.google.firebase:firebase-analytics'
   implementation 'com.google.firebase:firebase-messaging'
   implementation 'com.google.flatbuffers:flatbuffers-java:1.12.0'
@@ -81,6 +85,14 @@ afterEvaluate {
              'https://github.com/google/flatbuffers.git',
              flatbuffersDir
       }
+      exec {
+        executable 'git'
+        args 'apply',
+             '../../scripts/git/patches/flatbuffers/0001-remove-unused-var.patch',
+             '--verbose',
+             '--directory',
+             'messaging/messaging_java/build/flatbuffers'
+        }
     }
 
     // Locate or build flatc.

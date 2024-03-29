@@ -39,6 +39,7 @@
 #include "auth/src/desktop/rpcs/secure_token_response.h"
 #include "auth/src/desktop/rpcs/set_account_info_request.h"
 #include "auth/src/desktop/rpcs/set_account_info_response.h"
+#include "auth/src/desktop/rpcs/sign_up_request.h"
 #include "auth/src/desktop/rpcs/verify_assertion_request.h"
 #include "auth/src/desktop/rpcs/verify_assertion_response.h"
 #include "auth/src/desktop/rpcs/verify_password_request.h"
@@ -256,6 +257,47 @@ void TriggerSaveUserFlow(AuthData* const auth_data) {
   }
 }
 
+template <typename ResponseT, typename ResultT>
+void PerformSignUpFlow(AuthDataHandle<ResultT, SignUpRequest>* const handle) {
+  FIREBASE_ASSERT_RETURN_VOID(handle && handle->request);
+
+  const auto response = GetResponse<ResponseT>(*handle->request);
+  const AuthenticationResult auth_response =
+      CompleteSignInFlow(handle->auth_data, response);
+
+  if (auth_response.IsValid()) {
+    const AuthResult auth_result =
+        auth_response.SetAsCurrentUser(handle->auth_data);
+    // The usual SignIn flow doesn't trigger this, but since this is used
+    // to upgrade anonymous accounts, it is needed for SignUp
+    NotifyIdTokenListeners(handle->auth_data);
+    CompletePromise(&handle->promise, auth_result);
+  } else {
+    FailPromise(&handle->promise, auth_response.error());
+  }
+}
+
+template <typename ResponseT, typename ResultT>
+void PerformSignUpFlow_DEPRECATED(
+    AuthDataHandle<ResultT, SignUpRequest>* const handle) {
+  FIREBASE_ASSERT_RETURN_VOID(handle && handle->request);
+
+  const auto response = GetResponse<ResponseT>(*handle->request);
+  const AuthenticationResult auth_response =
+      CompleteSignInFlow(handle->auth_data, response);
+
+  if (auth_response.IsValid()) {
+    const SignInResult sign_in_result =
+        auth_response.SetAsCurrentUser_DEPRECATED(handle->auth_data);
+    // The usual SignIn flow doesn't trigger this, but since this is used
+    // to upgrade anonymous accounts, it is needed for SignUp
+    NotifyIdTokenListeners(handle->auth_data);
+    CompletePromise(&handle->promise, sign_in_result);
+  } else {
+    FailPromise(&handle->promise, auth_response.error());
+  }
+}
+
 template <typename ResultT>
 void PerformSetAccountInfoFlow(
     AuthDataHandle<ResultT, SetAccountInfoRequest>* const handle) {
@@ -306,14 +348,14 @@ Future<ResultT> DoLinkWithEmailAndPassword(
   const EmailAuthCredential* email_credential =
       GetEmailCredential(raw_credential_impl);
 
-  typedef SetAccountInfoRequest RequestT;
+  typedef SignUpRequest RequestT;
   auto request = RequestT::CreateLinkWithEmailAndPasswordRequest(
       *auth_data->app, GetApiKey(*auth_data),
       email_credential->GetEmail().c_str(),
       email_credential->GetPassword().c_str());
 
   return CallAsyncWithFreshToken(auth_data, promise, std::move(request),
-                                 PerformSetAccountInfoFlow<ResultT>);
+                                 PerformSignUpFlow<SignUpNewUserResponse>);
 }
 
 // Calls setAccountInfo endpoint to link the current user with the given email
@@ -329,14 +371,15 @@ Future<ResultT> DoLinkWithEmailAndPassword_DEPRECATED(
   const EmailAuthCredential* email_credential =
       GetEmailCredential(raw_credential_impl);
 
-  typedef SetAccountInfoRequest RequestT;
+  typedef SignUpRequest RequestT;
   auto request = RequestT::CreateLinkWithEmailAndPasswordRequest(
       *auth_data->app, GetApiKey(*auth_data),
       email_credential->GetEmail().c_str(),
       email_credential->GetPassword().c_str());
 
-  return CallAsyncWithFreshToken(auth_data, promise, std::move(request),
-                                 PerformSetAccountInfoFlow_DEPRECATED<ResultT>);
+  return CallAsyncWithFreshToken(
+      auth_data, promise, std::move(request),
+      PerformSignUpFlow_DEPRECATED<SignUpNewUserResponse>);
 }
 
 // Checks that the given provider wasn't already linked to the currently
@@ -895,6 +938,38 @@ Future<void> User::SendEmailVerification() {
   typedef GetOobConfirmationCodeRequest RequestT;
   auto request = RequestT::CreateSendEmailVerificationRequest(
       *auth_data_->app, GetApiKey(*auth_data_), language_code);
+
+  const auto callback = [](AuthDataHandle<void, RequestT>* const handle) {
+    const auto response =
+        GetResponse<GetOobConfirmationCodeResponse>(*handle->request);
+    if (response.IsSuccessful()) {
+      handle->promise.Complete();
+    } else {
+      FailPromise(&handle->promise, response.error_code());
+    }
+  };
+
+  return CallAsyncWithFreshToken(auth_data_, promise, std::move(request),
+                                 callback);
+}
+
+Future<void> User::SendEmailVerificationBeforeUpdatingEmail(const char* email) {
+  Promise<void> promise(&auth_data_->future_impl,
+                        kUserFn_SendEmailVerificationBeforeUpdatingEmail);
+  if (!ValidateCurrentUser(&promise, auth_data_)) {
+    return promise.LastResult();
+  }
+
+  const char* language_code = nullptr;
+  auto auth_impl = static_cast<AuthImpl*>(auth_data_->auth_impl);
+  if (!auth_impl->language_code.empty()) {
+    language_code = auth_impl->language_code.c_str();
+  }
+
+  typedef GetOobConfirmationCodeRequest RequestT;
+  auto request =
+      RequestT::CreateSendEmailVerificationBeforeUpdatingEmailRequest(
+          *auth_data_->app, GetApiKey(*auth_data_), email, language_code);
 
   const auto callback = [](AuthDataHandle<void, RequestT>* const handle) {
     const auto response =

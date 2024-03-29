@@ -518,6 +518,7 @@ if (IOS)
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/document_snapshot.h
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/field_path.h
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/field_value.h
+    ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/filter.h
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/listener_registration.h
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/load_bundle_task_progress.h
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/map_field_value.h
@@ -531,10 +532,10 @@ if (IOS)
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/transaction.h
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/transaction_options.h
     ${FIREBASE_SOURCE_DIR}/firestore/src/include/firebase/firestore/write_batch.h
-    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestore/Firestore/core/include/firebase/firestore/firestore_errors.h
-    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestore/Firestore/core/include/firebase/firestore/firestore_version.h
-    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestore/Firestore/core/include/firebase/firestore/geo_point.h
-    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestore/Firestore/core/include/firebase/firestore/timestamp.h)
+    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestoreInternal/Firestore/core/include/firebase/firestore/firestore_errors.h
+    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestoreInternal/Firestore/core/include/firebase/firestore/firestore_version.h
+    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestoreInternal/Firestore/core/include/firebase/firestore/geo_point.h
+    ${FIREBASE_POD_DIR}/Pods/FirebaseFirestoreInternal/Firestore/core/include/firebase/firestore/timestamp.h)
   set(functions_HDRS
     ${FIREBASE_SOURCE_DIR}/functions/src/include/firebase/functions.h
     ${FIREBASE_SOURCE_DIR}/functions/src/include/firebase/functions/callable_reference.h
@@ -546,7 +547,10 @@ if (IOS)
     ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/interstitial_ad.h
     ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/internal/native_ad.h
     ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/rewarded_ad.h
-    ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/types.h)
+    ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/types.h
+    ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/ump.h
+    ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/ump/consent_info.h
+    ${FIREBASE_SOURCE_DIR}/gma/src/include/firebase/gma/ump/types.h)
   set(installations_HDRS
     ${FIREBASE_SOURCE_DIR}/installations/src/include/firebase/installations.h)
   set(messaging_HDRS
