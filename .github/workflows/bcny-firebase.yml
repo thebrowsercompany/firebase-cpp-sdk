@@ -77,6 +77,8 @@ jobs:
                 -D FIREBASE_INCLUDE_LIBRARY_DEFAULT=OFF `
                 -D FIREBASE_INCLUDE_AUTH=YES `
                 -D FIREBASE_INCLUDE_FIRESTORE=YES `
+                -D FIREBASE_INCLUDE_FUNCTIONS=YES `
+                -D FIREBASE_INCLUDE_STORAGE=YES `
                 -D FIREBASE_USE_BORINGSSL=YES `
                 -D MSVC_RUNTIME_LIBRARY_STATIC=NO `
                 -D CMAKE_C_FLAGS="/D_HAS_EXCEPTIONS=0 /EHsc-"`
@@ -110,6 +112,8 @@ jobs:
                 -D FIREBASE_INCLUDE_LIBRARY_DEFAULT=OFF `
                 -D FIREBASE_INCLUDE_AUTH=YES `
                 -D FIREBASE_INCLUDE_FIRESTORE=YES `
+                -D FIREBASE_INCLUDE_FUNCTIONS=YES `
+                -D FIREBASE_INCLUDE_STORAGE=YES `
                 -D FIREBASE_USE_BORINGSSL=YES `
                 -D MSVC_RUNTIME_LIBRARY_STATIC=NO `
                 -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded `
@@ -168,8 +172,10 @@ jobs:
               <file src="`$BUILDROOT`$\usr\include\firebase\app.h" target="include/firebase" />
               <file src="`$BUILDROOT`$\usr\include\firebase\auth.h" target="include/firebase" />
               <file src="`$BUILDROOT`$\usr\include\firebase\firestore.h" target="include/firebase" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\functions.h" target="include/firebase" />
               <file src="`$BUILDROOT`$\usr\include\firebase\future.h" target="include/firebase" />
               <file src="`$BUILDROOT`$\usr\include\firebase\log.h" target="include/firebase" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\storage.h" target="include/firebase" />
               <file src="`$BUILDROOT`$\usr\include\firebase\util.h" target="include/firebase" />
               <file src="`$BUILDROOT`$\usr\include\firebase\variant.h" target="include/firebase" />
               <file src="`$BUILDROOT`$\usr\include\firebase\auth\credential.h" target="include/firebase/auth" />
@@ -200,6 +206,14 @@ jobs:
               <file src="`$BUILDROOT`$\usr\include\firebase\firestore\transaction.h" target="include/firebase/firestore" />
               <file src="`$BUILDROOT`$\usr\include\firebase\firestore\transaction_options.h" target="include/firebase/firestore" />
               <file src="`$BUILDROOT`$\usr\include\firebase\firestore\write_batch.h" target="include/firebase/firestore" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\functions\callable_reference.h" target="include/firebase/functions" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\functions\callable_result.h" target="include/firebase/functions" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\functions\common.h" target="include/firebase/functions" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\storage\common.h" target="include/firebase/storage" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\storage\controller.h" target="include/firebase/storage" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\storage\listener.h" target="include/firebase/storage" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\storage\metadata.h" target="include/firebase/storage" />
+              <file src="`$BUILDROOT`$\usr\include\firebase\storage\storage_reference.h" target="include/firebase/storage" />
               <file src="`$BUILDROOT`$\usr\include\firebase\internal\common.h" target="include/firebase/internal" />
               <file src="`$BUILDROOT`$\usr\include\firebase\internal\future_impl.h" target="include/firebase/internal" />
               <file src="`$BUILDROOT`$\usr\include\firebase\internal\mutex.h" target="include/firebase/internal" />
