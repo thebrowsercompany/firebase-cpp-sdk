@@ -154,16 +154,15 @@ jobs:
           gh release upload "$Date.$Release" firebase-windows-${{ matrix.arch }}.zip -R ${{ github.repository }}
           gh release upload "$Date.$Release" firebase-windows-${{ matrix.arch }}.zip.sha256 -R ${{ github.repository }}
 
-      - name: Print built libraries
-        run: Get-ChildItem -Recurse -Name -Path ${{ github.workspace }}\BuildRoot\Library\firebase -Include *.lib
 
       - name: Generate firebase.nuspec
         run: |
-          # Gather all built libraries.
+          # Generate nuspec xml for each included library.
           $XMLLibFiles=""
-          $LibFileNames=(Get-ChildItem -Name -Recurse -Path ${{ github.workspace }}\BuildRoot\Library\firebase -Include *.lib)
+          $LibPath="${{ github.workspace }}\BuildRoot\Library\firebase"
+          $LibFileNames=(Get-ChildItem -Name -Recurse -Path $LibPath -Include *.lib | Where-Object { $_ -notlike "*deps\*" })
           foreach ($LibFileName in $LibFileNames) {
-            $XMLLibFiles += "<file src=`"```$BUILDROOT```$$LibFileName`" target=`"lib`" />`n"
+            $XMLLibFiles += "    <file src=`"`$BUILDROOT`$\$LibFileName`" target=`"lib`" />`n"
           }
 
           @"
@@ -231,11 +230,13 @@ jobs:
               <file src="`$BUILDROOT`$\usr\include\firebase\internal\type_traits.h" target="include/firebase/internal" />
               <!-- FIXME(compnerd) is this header actually required? -->
               <file src="`$BUILDROOT`$\usr\include\google_play_services\availability.h" target="include/google_play_services" />
+              <!-- Libraries -->
               $($XMLLibFiles.Trim())
             </files>
           </package>
           "@ | Out-File -Encoding UTF8 ${{ github.workspace }}/firebase.nuspec
 
+          # Show output for easier debugging.
           Get-Content ${{ github.workspace }}/firebase.nuspec
 
       - name: Package firebase-cpp-sdk
