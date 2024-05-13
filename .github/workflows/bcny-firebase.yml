@@ -161,9 +161,9 @@ jobs:
         run: |
           # Gather all built libraries.
           $XMLLibFiles=""
-          $LibFileNames=(Get-ChildItem -Recurse -Path ${{ github.workspace }}\BuildRoot\Library\firebase -Include *.lib)
+          $LibFileNames=(Get-ChildItem -Name -Recurse -Path ${{ github.workspace }}\BuildRoot\Library\firebase -Include *.lib)
           foreach ($LibFileName in $LibFileNames) {
-            $XMLLibFiles += "<file src=`"``$BUILDROOT``$LibFileName`" target=`"lib`" />`n"
+            $XMLLibFiles += "<file src=`"```$BUILDROOT```$$LibFileName`" target=`"lib`" />`n"
           }
 
           @"
