@@ -17,7 +17,7 @@
 #define __swift__ 50000
 #include "firestore/src/include/firebase/firestore.h"
 
-#if FIREBASE_PLATFORM_WINDOWS
+#if FIREBASE_PLATFORM_WINDOWS || FIREBASE_PLATFORM_ANDROID
 namespace firebase {
 namespace firestore {
 Firestore::Firestore(const Firestore &) noexcept = default;
