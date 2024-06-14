@@ -196,7 +196,7 @@ class Firestore {
    * Firestore::GetInstance().
    */
 #if defined(__swift__)
-#if FIREBASE_PLATFORM_WINDOWS
+#if FIREBASE_PLATFORM_WINDOWS || FIREBASE_PLATFORM_ANDROID
   Firestore(const Firestore& src) noexcept;
 #else
   Firestore(const Firestore& src) = delete;
