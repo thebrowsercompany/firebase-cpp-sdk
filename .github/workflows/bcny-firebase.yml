@@ -142,19 +142,6 @@ jobs:
           name: firebase-windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library/firebase
 
-      - name: Create Release
-        if: github.event_name != 'pull_request'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          Compress-Archive -Path "${{ github.workspace }}/BuildRoot/Library/firebase" -DestinationPath firebase-windows-${{ matrix.arch }}.zip
-          $SHA256 = Get-FileHash -Path firebase-windows-${{ matrix.arch }}.zip -Algorithm SHA256 > firebase-windows-${{ matrix.arch }}.zip.sha256
-          $Date = Get-Date -Format 'yyyyMMdd'
-          $Release = $(gh release list -R ${{ github.repository }} | Select-String -Pattern $Date -AllMatches).Count
-          gh release create "$Date.$Release" -R ${{ github.repository }}
-          gh release upload "$Date.$Release" firebase-windows-${{ matrix.arch }}.zip -R ${{ github.repository }}
-          gh release upload "$Date.$Release" firebase-windows-${{ matrix.arch }}.zip.sha256 -R ${{ github.repository }}
-
       - name: Print built libraries
         run: Get-ChildItem -Recurse -Name -Path ${{ github.workspace }}\BuildRoot\Library\firebase -Include *.lib
 
@@ -451,8 +438,8 @@ jobs:
           name: firebase-android-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library/firebase
 
-  release_android:
-    needs: [android]
+  release:
+    needs: [windows,android]
     if: github.event_name != 'pull_request'
     runs-on: windows-latest
     steps:
@@ -468,14 +455,34 @@ jobs:
           name: firebase-android-x86_64
           path: ${{ github.workspace }}/firebase-android-x86_64
 
+      - name: Download firebase-windows-amd64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: firebase-windows-amd64
+          path: ${{ github.workspace }}/firebase-windows-amd64
+
+      - name: Download firebase-windows-arm64 artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: firebase-windows-arm64
+          path: ${{ github.workspace }}/firebase-windows-arm64
+
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           Compress-Archive -Path "${{ github.workspace }}/firebase-android-arm64-v8a" -DestinationPath firebase-android-arm64-v8a.zip
-          $SHA256_arm64 = Get-FileHash -Path firebase-android-arm64-v8a.zip -Algorithm SHA256 > firebase-android-arm64-v8a.zip.sha256
+          Get-FileHash -Path firebase-android-arm64-v8a.zip -Algorithm SHA256 > firebase-android-arm64-v8a.zip.sha256
+
           Compress-Archive -Path "${{ github.workspace }}/firebase-android-x86_64" -DestinationPath firebase-android-x86_64.zip
-          $SHA256_x86_64 = Get-FileHash -Path firebase-android-x86_64.zip -Algorithm SHA256 > firebase-android-x86_64.zip.sha256
+          Get-FileHash -Path firebase-android-x86_64.zip -Algorithm SHA256 > firebase-android-x86_64.zip.sha256
+
+          Compress-Archive -Path "${{ github.workspace }}/firebase-windows-amd64" -DestinationPath firebase-windows-amd64.zip
+          Get-FileHash -Path firebase-windows-amd64.zip -Algorithm SHA256 > firebase-windows-amd64.zip.sha256
+
+          Compress-Archive -Path "${{ github.workspace }}/firebase-windows-arm64" -DestinationPath firebase-windows-arm64.zip
+          Get-FileHash -Path firebase-windows-arm64.zip -Algorithm SHA256 > firebase-windows-arm64.zip.sha256
+
           $Date = Get-Date -Format 'yyyyMMdd'
           $Release = $(gh release list -R ${{ github.repository }} | Select-String -Pattern $Date -AllMatches).Count
           gh release create "$Date.$Release" -R ${{ github.repository }}
@@ -483,4 +490,8 @@ jobs:
           gh release upload "$Date.$Release" firebase-android-arm64-v8a.zip.sha256 -R ${{ github.repository }}
           gh release upload "$Date.$Release" firebase-android-x86_64.zip -R ${{ github.repository }}
           gh release upload "$Date.$Release" firebase-android-x86_64.zip.sha256 -R ${{ github.repository }}
+          gh release upload "$Date.$Release" firebase-windows-amd64.zip -R ${{ github.repository }}
+          gh release upload "$Date.$Release" firebase-windows-amd64.zip.sha256 -R ${{ github.repository }}
+          gh release upload "$Date.$Release" firebase-windows-arm64.zip -R ${{ github.repository }}
+          gh release upload "$Date.$Release" firebase-windows-arm64.zip.sha256 -R ${{ github.repository }}
 
