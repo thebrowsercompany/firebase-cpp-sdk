@@ -148,7 +148,7 @@ class Auth {
   ~Auth();
 
 #if defined(__swift__)
-#if FIREBASE_PLATFORM_WINDOWS
+#if FIREBASE_PLATFORM_WINDOWS || FIREBASE_PLATFORM_ANDROID
   // TODO(apple/swift#67288) support trivial C++ types with non-trivial dtors
   Auth(const Auth&) noexcept;
 #endif
