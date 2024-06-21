@@ -17,7 +17,7 @@
 #define __swift__ 50000
 #include "auth/src/include/firebase/auth.h"
 
-#if FIREBASE_PLATFORM_WINDOWS
+#if FIREBASE_PLATFORM_WINDOWS || FIREBASE_PLATFORM_ANDROID
 namespace firebase {
 namespace auth {
 Auth::Auth(const Auth &) noexcept = default;
