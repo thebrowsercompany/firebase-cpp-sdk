@@ -129,7 +129,7 @@ jobs:
       # So, the less messy solution seems to be to patch the config.h file after the configure step, which is what we do below.
       - name: Change SNAPPY_HAVE_BMI2 in snappy config.h
         # BMI2 instructions are only relevant in amd64
-        if: ${{ matrix.arch }} == 'amd64'
+        if: matrix.arch == 'amd64'
         run: |
           $snappy_config = "${{ github.workspace }}\BinaryCache\firebase\external\src\firestore-build\external\src\snappy-build\config.h"
           if (-not (Select-String -Path $snappy_config -Pattern "#define SNAPPY_HAVE_BMI2 1")) {
@@ -159,9 +159,15 @@ jobs:
 
       # We need this library to be used on CPUs without BMI2 support, so we check that snappy.lib was built correctly,
       # and fail if it contains BMI2 instructions.
+      #
+      # Note: We explicitly check for bzhi because that is the BMI2 instruction used in snappy source code if BMI2 is enabled:
+      # https://github.com/google/snappy/blob/2c94e11145f0b7b184b831577c93e5a41c4c0346/snappy.cc#L1197
+      # It may be possible that the compiler decides to add other BMI2 instructions automatically, but by checking
+      # for the absense of 'bzhi' we are at least ensuring that the explicit SNAPPY_HAVE_BMI2 change in config.h is
+      # being respected.
       - name: Check for Snappy BMI2 instructions
         # BMI2 instructions are only relevant in amd64
-        if: ${{ matrix.arch }} == 'amd64'
+        if: matrix.arch == 'amd64'
         run: |
           Write-Host "Checking for BMI2 instructions on Snappy.lib..."
           $snappy_lib = "${{ github.workspace }}/BuildRoot/Library/firebase/usr/libs/windows/snappy.lib"
