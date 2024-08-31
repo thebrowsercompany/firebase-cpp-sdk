@@ -475,6 +475,29 @@ jobs:
             cp "$file" "$destination_dir"
             echo "Copied: $file"
           done < <(find $source -type f -name "*.a")
+          echo "Copying header files ..."
+          header_destination_dir=${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase
+          firebase_dir=${{ github.workspace }}/SourceCache/firebase-cpp-sdk
+          mkdir -p $header_destination_dir
+          cp ${firebase_dir}/app/src/include/firebase/app.h ${header_destination_dir}
+          cp ${firebase_dir}/app/src/include/firebase/future.h ${header_destination_dir}
+          cp ${firebase_dir}/app/src/include/firebase/log.h ${header_destination_dir}
+          cp ${firebase_dir}/app/src/include/firebase/util.h ${header_destination_dir}
+          cp ${firebase_dir}/app/src/include/firebase/variant.h ${header_destination_dir}
+          mkdir -p $header_destination_dir/internal
+          cp ${firebase_dir}/app/src/include/firebase/internal/*.h ${header_destination_dir}/internal/
+          cp ${firebase_dir}/auth/src/include/firebase/auth.h ${header_destination_dir}
+          mkdir -p $header_destination_dir/auth
+          cp ${firebase_dir}/auth/src/include/firebase/auth/*.h ${header_destination_dir}/auth/
+          cp ${firebase_dir}/firestore/src/include/firebase/firestore.h ${header_destination_dir}
+          mkdir -p $header_destination_dir/firestore
+          cp ${firebase_dir}/firestore/src/include/firebase/firestore/*.h ${header_destination_dir}/firestore/
+          cp ${firebase_dir}/functions/src/include/firebase/functions.h ${header_destination_dir}
+          mkdir -p $header_destination_dir/functions
+          cp ${firebase_dir}/functions/src/include/firebase/functions/*.h ${header_destination_dir}/functions/
+          cp ${firebase_dir}/storage/src/include/firebase/storage.h ${header_destination_dir}
+          mkdir -p $header_destination_dir/storage
+          cp ${firebase_dir}/storage/src/include/firebase/storage/*.h ${header_destination_dir}/storage/
 
       - uses: actions/upload-artifact@v3
         with:
