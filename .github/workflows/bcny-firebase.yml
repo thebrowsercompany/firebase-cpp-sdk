@@ -475,6 +475,42 @@ jobs:
             cp "$file" "$destination_dir"
             echo "Copied: $file"
           done < <(find $source -type f -name "*.a")
+          echo "Copying header files ..."
+          header_destination_dir=${{ github.workspace }}/BuildRoot/Library/firebase/usr/include/firebase
+          firebase_dir=${{ github.workspace }}/SourceCache/firebase-cpp-sdk
+          mkdir -p $header_destination_dir \
+                   $header_destination_dir/internal \
+                   $header_destination_dir/auth \
+                   $header_destination_dir/firestore \
+                   $header_destination_dir/functions \
+                   $header_destination_dir/storage
+          for header in ${firebase_dir}/app/src/include/firebase/app.h \
+                        ${firebase_dir}/app/src/include/firebase/future.h \
+                        ${firebase_dir}/app/src/include/firebase/log.h \
+                        ${firebase_dir}/app/src/include/firebase/util.h \
+                        ${firebase_dir}/app/src/include/firebase/variant.h \
+                        ${firebase_dir}/auth/src/include/firebase/auth.h \
+                        ${firebase_dir}/firestore/src/include/firebase/firestore.h \
+                        ${firebase_dir}/functions/src/include/firebase/functions.h \
+                        ${firebase_dir}/storage/src/include/firebase/storage.h \
+                        ; do
+            cp $header ${header_destination_dir}
+          done
+          for header in ${firebase_dir}/app/src/include/firebase/internal/*.h; do
+            cp $header ${header_destination_dir}/internal/
+          done
+          for header in ${firebase_dir}/auth/src/include/firebase/auth/*.h; do
+            cp $header ${header_destination_dir}/auth/
+          done
+          for header in ${firebase_dir}/firestore/src/include/firebase/firestore/*.h; do
+            cp $header ${header_destination_dir}/firestore/
+          done
+          for header in ${firebase_dir}/functions/src/include/firebase/functions/*.h; do
+            cp $header ${header_destination_dir}/functions/
+          done
+          for header in ${firebase_dir}/storage/src/include/firebase/storage/*.h; do
+            cp $header ${header_destination_dir}/storage/
+          done
 
       - uses: actions/upload-artifact@v3
         with:
