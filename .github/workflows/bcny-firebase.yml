@@ -511,6 +511,11 @@ jobs:
           for header in ${firebase_dir}/storage/src/include/firebase/storage/*.h; do
             cp $header ${header_destination_dir}/storage/
           done
+          for header in ${firebase_dir}/app/.externalNativeBuild/cmake/release/${{ matrix.arch }}/external/src/firestore/Firestore/core/include/firebase/firestore/firestore_errors.h \
+                        ${firebase_dir}/app/.externalNativeBuild/cmake/release/${{ matrix.arch }}/external/src/firestore/Firestore/core/include/firebase/firestore/geo_point.h \
+                        ${firebase_dir}/app/.externalNativeBuild/cmake/release/${{ matrix.arch }}/external/src/firestore/Firestore/core/include/firebase/firestore/timestamp.h ; do
+            cp $header ${header_destination_dir}/firestore/
+          done
 
       - uses: actions/upload-artifact@v3
         with:
