@@ -520,6 +520,8 @@ jobs:
           for file in $(find ${firebase_dir} -name "*.aar"); do
             cp "$file" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/android"
           done
+          find ${firebase_dir} -name "*.aar"
+          find ${firebase_dir} -name "*.jar"
 
       - uses: actions/upload-artifact@v3
         with:
