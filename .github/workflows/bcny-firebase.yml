@@ -516,6 +516,10 @@ jobs:
                         ${firebase_dir}/app/.externalNativeBuild/cmake/release/${{ matrix.arch }}/external/src/firestore/Firestore/core/include/firebase/firestore/timestamp.h ; do
             cp $header ${header_destination_dir}/firestore/
           done
+          mkdir -p "${{ github.workspace }}/BuildRoot/Library/firebase/usr/android"
+          for file in $(find ${firebase_dir} -name "*.aar"); do
+            cp "$file" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/android"
+          done
 
       - uses: actions/upload-artifact@v3
         with:
