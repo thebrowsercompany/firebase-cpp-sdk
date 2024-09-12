@@ -432,7 +432,7 @@ jobs:
           	-DANDROID_PLATFORM=android-19 \
           	-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=$dst_dir/$module/build/intermediates/cmake/release/obj/$arch \
           	-D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/firebase/usr \
-          	-DCMAKE_BUILD_TYPE=Release \
+          	-DCMAKE_BUILD_TYPE=Debug \
           	-DANDROID_NDK=$ndk_dir \
           	-DCMAKE_TOOLCHAIN_FILE=$ndk_dir/build/cmake/android.toolchain.cmake \
           	-GNinja \
