@@ -418,6 +418,12 @@ jobs:
       - name: Install absl-py
         run: pip install absl-py
 
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       - name: Build Android
         run: |
           echo "NDK: $NDK_ROOT"
