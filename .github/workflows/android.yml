@@ -161,3 +161,12 @@ jobs:
         run: |
           find android_build -name "*.aar"
           find android_build -name "*.jar"
+          mkdir -p "${{ github.workspace }}/BuildRoot/Library/firebase/usr/android"
+          for file in $(find ${firebase_dir} -name "*.aar"); do
+            cp "$file" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/android"
+          done
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: firebase-android-${{ matrix.architecture }}-${{ matrix.os }}
+          path: ${{ github.workspace }}/BuildRoot/Library/firebase
