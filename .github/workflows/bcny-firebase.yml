@@ -48,6 +48,7 @@ jobs:
 
       - name: Configure flatbuffers
         run:
+          exit 0
           cmake -B ${{ github.workspace }}/BinaryCache/flatbuffers `
                 -D CMAKE_BUILD_TYPE=Release `
                 -G "Visual Studio 17 2022" `
@@ -396,6 +397,11 @@ jobs:
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
 
+      - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}/SourceCache/firebase-android-sdk
+          repository: firebase/firebase-android-sdk
+
       - name: Install Ninja
         run: sudo apt-get install -y ninja-build
 
@@ -411,6 +417,16 @@ jobs:
 
       - name: Install absl-py
         run: pip install absl-py
+
+      - name: Build Android
+        run: |
+          echo "NDK: $NDK_ROOT"
+          cd ${{ github.workspace }}/SourceCache/firebase-android-sdk
+          git submodule update --init --recursive
+          ./gradlew :firebase-common:generateDexJarRelease
+          find ${{ github.workspace }}/SourceCache/firebase-android-sdk-name "*.aar"
+          find ${{ github.workspace }}/SourceCache/firebase-android-sdk -name "*.jar"
+          exit 1
 
       - name: Build
         run: |
