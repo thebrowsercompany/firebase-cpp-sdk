@@ -433,10 +433,19 @@ jobs:
           ./gradlew tasks
           find ${{ github.workspace }}/SourceCache/firebase-android-sdk -name "*.aar"
           find ${{ github.workspace }}/SourceCache/firebase-android-sdk -name "*.jar"
-          exit 1
+          mkdir -p "${{ github.workspace }}/BuildRoot/Library/firebase/usr/android"
+          for file in $(find ${{ github.workspace }}/SourceCache/firebase-android-sdk -name "*.aar"); do
+            cp "$file" "${{ github.workspace }}/BuildRoot/Library/firebase/usr/android"
+          done
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: firebase-android-sdk-${{ matrix.arch }}
+          path: ${{ github.workspace }}/BuildRoot/Library/firebase
 
       - name: Build
         run: |
+          exit 1
           echo "NDK: $NDK_ROOT"
 
           export SRC=${{ github.workspace }}/SourceCache/firebase-cpp-sdk
