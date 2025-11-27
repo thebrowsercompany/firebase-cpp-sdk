@@ -414,7 +414,13 @@ jobs:
           echo "ANDROID_NDK_HOME=${ANDROID_NDK_ROOT}" >> $GITHUB_ENV
 
       - name: Install absl-py
-        run: pip install absl-py
+        run: |
+          python3 -m venv ~/venv
+          source ~/venv/bin/activate
+          pip install absl-py
+          echo "PATH=${PATH}" >> $GITHUB_ENV
+          echo "VENV_DIR=${VENV_DIR}" >> $GITHUB_ENV
+          echo "VIRTUAL_ENV=${VIRTUAL_ENV}" >> $GITHUB_ENV
 
       - name: Build
         run: |
