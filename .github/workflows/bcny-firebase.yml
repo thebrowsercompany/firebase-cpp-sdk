@@ -18,14 +18,14 @@ jobs:
             platform: 'ARM64'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           path: ${{ github.workspace }}/SourceCache/flatbuffers
           ref: 99aa1ef21dd9dc3f9d4fb0eb82f4b59d0bb5e4c5
           repository: google/flatbuffers
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
@@ -37,7 +37,7 @@ jobs:
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         id: python
         with:
           python-version: 3.9
@@ -180,7 +180,7 @@ jobs:
             Write-Output "Success! No BMI2 instructions were found in snappy.lib."
           }
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: firebase-windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library/firebase
@@ -356,7 +356,7 @@ jobs:
           "@ | Out-File -Encoding UTF8 firebase.nuspec
           nuget pack -Properties BUILDROOT=${{ github.workspace }}\BuildRoot\Library\firebase -Suffix (git -C ${{ github.workspace }}/SourceCache/firebase-cpp-sdk log -1 --format=%h) firebase.nuspec
         shell: pwsh
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: github.event_name != 'pull_request'
         with:
           name: windows-${{ matrix.arch }}.nupkg
@@ -381,7 +381,7 @@ jobs:
         shell: pwsh
 
   android:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: true
       matrix:
@@ -389,7 +389,7 @@ jobs:
           - arch: 'arm64-v8a'
           - arch: 'x86_64'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
@@ -399,15 +399,19 @@ jobs:
       - name: Install Ninja
         run: sudo apt-get install -y ninja-build
 
-      - name: Download Android NDK
+      - name: Install Android SDK for API level 28
         run: |
-          NDK_VERSION="r21e"
-          NDK_FILE="android-ndk-${NDK_VERSION}-linux-x86_64.zip"
-          curl -L -o "${NDK_FILE}" "https://dl.google.com/android/repository/${NDK_FILE}"
-          unzip -q "${NDK_FILE}"
-          rm "${NDK_FILE}"
-          echo "NDK_ROOT=$(pwd)/android-ndk-${NDK_VERSION}" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$(pwd)/android-ndk-${NDK_VERSION}" >> $GITHUB_ENV
+          ANDROID_API_LEVEL="28"
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platforms;android-${ANDROID_API_LEVEL}"
+
+      - name: Install Android NDK r27c
+        run: |
+          ANDROID_NDK_VERSION="27.2.12479018"  # r27c
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "ndk;${ANDROID_NDK_VERSION}"
+          ANDROID_NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}
+          echo "ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT}" >> $GITHUB_ENV
+          echo "NDK_ROOT=${ANDROID_NDK_ROOT}" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=${ANDROID_NDK_ROOT}" >> $GITHUB_ENV
 
       - name: Install absl-py
         run: pip install absl-py
@@ -429,7 +433,7 @@ jobs:
           	-H$src_dir \
           	-B$dst_dir/$module/.externalNativeBuild/cmake/release/$arch \
           	-DANDROID_ABI=$arch \
-          	-DANDROID_PLATFORM=android-19 \
+          	-DANDROID_PLATFORM=android-28 \
           	-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=$dst_dir/$module/build/intermediates/cmake/release/obj/$arch \
           	-D CMAKE_INSTALL_PREFIX=${{ github.workspace }}/BuildRoot/Library/firebase/usr \
           	-DCMAKE_BUILD_TYPE=Release \
@@ -448,7 +452,7 @@ jobs:
           cd ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
           
           # Prebuild the gradle app to avoid any gradle <-> cmake issues on GHA workflow.
-          ./gradlew :app:invites_resources:generateDexJarRelease
+          ./gradlew :app:app_resources:generateDexJarRelease
 
           # Build the invididual components
           cmake_build $arch "app" ""
@@ -517,7 +521,7 @@ jobs:
             cp $header ${header_destination_dir}/firestore/
           done
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: firebase-android-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library/firebase
@@ -528,25 +532,25 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Download firebase-android-arm64-v8a artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: firebase-android-arm64-v8a
           path: ${{ github.workspace }}/firebase-android-arm64-v8a
 
       - name: Download firebase-android-x86_64 artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: firebase-android-x86_64
           path: ${{ github.workspace }}/firebase-android-x86_64
 
       - name: Download firebase-windows-amd64 artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: firebase-windows-amd64
           path: ${{ github.workspace }}/firebase-windows-amd64
 
       - name: Download firebase-windows-arm64 artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: firebase-windows-arm64
           path: ${{ github.workspace }}/firebase-windows-arm64
