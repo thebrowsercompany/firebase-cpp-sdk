@@ -32,10 +32,10 @@ jobs:
           repository: thebrowsercompany/firebase-cpp-sdk
 
       - uses: compnerd/gha-setup-vsdevenv@main
-        with:
-          host_arch: amd64
-          components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
-          arch: ${{ matrix.arch }}
+        # with:
+        #   host_arch: amd64
+        #   components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
+        #   arch: ${{ matrix.arch }}
 
       - uses: actions/setup-python@v5
         id: python
