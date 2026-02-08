@@ -3,3 +3,4 @@ absl-py
 pytz
 requests
 retry
+melio-crypto
