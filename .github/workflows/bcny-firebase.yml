@@ -18,9 +18,6 @@ jobs:
             platform: 'ARM64'
 
     steps:
-      - name: Debug vswhere location
-        shell: pwsh
-        run: where.exe vswhere
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
@@ -36,6 +33,7 @@ jobs:
 
       - uses: compnerd/gha-setup-vsdevenv@main
         with:
+          vswhere: "C:/ProgramData/Chocolatey/bin/vswhere.exe"
           host_arch: amd64
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
