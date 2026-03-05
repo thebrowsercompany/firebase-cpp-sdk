@@ -394,19 +394,12 @@ BackgroundTransportCurl::~BackgroundTransportCurl() {
     request_header_ = nullptr;
   }
 
-  // If this is an asynchronous operation, MarkFailed() or MarkCompleted()
-  // could end up attempting to tear down TransportCurl so we signal
-  // completion here.
-  if (transport_curl_->is_async()) {
-    transport_curl_->SignalTransferComplete();
-    CompleteOperation();
-  } else {
-    // Synchronous operations need all data present in the response before
-    // Perform() returns so signal complete after MarkFailed() or
-    // MarkCompleted().
-    CompleteOperation();
-    transport_curl_->SignalTransferComplete();
-  }
+  // Complete the operation before signaling, so that request_/response_ are
+  // still valid when MarkCompleted()/MarkFailed() is called. Signaling first
+  // would allow the waiting thread to destroy the Request/Response objects
+  // before CompleteOperation() can use them, causing a pure virtual call crash.
+  CompleteOperation();
+  transport_curl_->SignalTransferComplete();
 }
 
 void BackgroundTransportCurl::CompleteOperation() {
