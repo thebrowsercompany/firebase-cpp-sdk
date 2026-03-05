@@ -180,7 +180,7 @@ jobs:
             Write-Output "Success! No BMI2 instructions were found in snappy.lib."
           }
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v6
         with:
           name: firebase-windows-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library/firebase
@@ -356,7 +356,7 @@ jobs:
           "@ | Out-File -Encoding UTF8 firebase.nuspec
           nuget pack -Properties BUILDROOT=${{ github.workspace }}\BuildRoot\Library\firebase -Suffix (git -C ${{ github.workspace }}/SourceCache/firebase-cpp-sdk log -1 --format=%h) firebase.nuspec
         shell: pwsh
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v6
         if: github.event_name != 'pull_request'
         with:
           name: windows-${{ matrix.arch }}.nupkg
@@ -517,7 +517,7 @@ jobs:
             cp $header ${header_destination_dir}/firestore/
           done
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v6
         with:
           name: firebase-android-${{ matrix.arch }}
           path: ${{ github.workspace }}/BuildRoot/Library/firebase
