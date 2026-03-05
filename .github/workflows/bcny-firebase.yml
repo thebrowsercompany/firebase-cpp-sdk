@@ -18,6 +18,9 @@ jobs:
             platform: 'ARM64'
 
     steps:
+      - name: Debug vswhere location
+        shell: pwsh
+        run: where.exe vswhere
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
