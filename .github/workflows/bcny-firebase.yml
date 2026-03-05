@@ -37,6 +37,7 @@ jobs:
           host_arch: amd64
           components: 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64;Microsoft.VisualStudio.Component.VC.Tools.ARM64'
           arch: ${{ matrix.arch }}
+          verbose: true
 
       - uses: actions/setup-python@v4
         id: python
