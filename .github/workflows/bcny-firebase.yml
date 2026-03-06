@@ -377,7 +377,7 @@ jobs:
         shell: pwsh
 
   android:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
