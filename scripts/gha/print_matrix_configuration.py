@@ -91,7 +91,7 @@ PARAMETERS = {
     "matrix": {
       "os": ["ubuntu-22.04", "macos-15", "windows-latest"],
       "architecture": ["x64"],
-      "python_version": ["3.7"],
+      "python_version": ["3.11"],
 
       EXPANDED_KEY: {
         "os": ["ubuntu-22.04", "macos-15", "windows-latest"]

@@ -391,6 +391,18 @@ jobs:
           path: ${{ github.workspace }}/SourceCache/firebase-cpp-sdk
           ref: refs/heads/compnerd/swift
           repository: thebrowsercompany/firebase-cpp-sdk
+      # Currently this repo is pinned to an old version of the
+      # the firebase-cpp-sdk so we have to install an older
+      # version of java to allow this code to build correctly.
+      - name: Setup Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: oracle
+          java-version: '11'
+          cache: gradle
+
+      - name: Verify Java
+        run: java -version
 
       - name: Install Ninja
         run: sudo apt-get install -y ninja-build
