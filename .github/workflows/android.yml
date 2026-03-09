@@ -54,14 +54,6 @@ jobs:
       - name: setup Xcode version (macos)
         if: runner.os == 'macOS'
         run: sudo xcode-select -s /Applications/Xcode_${{ env.xcodeVersion }}.app/Contents/Developer
-      # This workflow still uses Gradle 6.7.1; pinning Java 11 avoids
-      # incompatibilities with newer default JDKs on hosted runners.
-      - name: Setup Java 11
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "11"
-          cache: gradle
       - name: Store git credentials for all git commands
         # Forces all git commands to use authenticated https, to prevent throttling.
         shell: bash
@@ -82,6 +74,15 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
+
+      # This workflow still uses Gradle 6.7.1; pinning Java 11 avoids
+      # incompatibilities with newer default JDKs on hosted runners.
+      - name: Setup Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+          cache: gradle
 
       - name: Set env variables for subsequent steps (all)
         shell: bash
