@@ -13,7 +13,7 @@ on:
 env:
   CCACHE_DIR: ${{ github.workspace }}/ccache_dir
   GITHUB_TOKEN: ${{ github.token }}
-  xcodeVersion: "14.1"  # Only affects Mac runners, and only for prerequisites.
+  xcodeVersion: "16.4"  # Only affects Mac runners, and only for prerequisites.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref }}
@@ -21,13 +21,13 @@ concurrency:
 
 jobs:
   prepare_matrix:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       matrix_os: ${{ steps.export-result.outputs.matrix_os }}
       matrix_architecture: ${{ steps.export-result.outputs.matrix_architecture }}
       matrix_python_version: ${{ steps.export-result.outputs.matrix_python_version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: false
       - name: Use expanded matrix
@@ -54,10 +54,6 @@ jobs:
       - name: setup Xcode version (macos)
         if: runner.os == 'macOS'
         run: sudo xcode-select -s /Applications/Xcode_${{ env.xcodeVersion }}.app/Contents/Developer
-      - name: Force Java 8 (macOS)
-        if: startsWith(matrix.os, 'macos')
-        shell: bash
-        run: echo "JAVA_HOME=${JAVA_HOME_8_X64}" >> $GITHUB_ENV
       - name: Store git credentials for all git commands
         # Forces all git commands to use authenticated https, to prevent throttling.
         shell: bash
@@ -75,9 +71,18 @@ jobs:
           echo "Enabling expanded build and test matrix."
           echo "USE_EXPANDED_MATRIX=1" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
+
+      # This workflow still uses Gradle 6.7.1; pinning Java 11 avoids
+      # incompatibilities with newer default JDKs on hosted runners.
+      - name: Setup Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+          cache: gradle
 
       - name: Set env variables for subsequent steps (all)
         shell: bash
@@ -97,7 +102,7 @@ jobs:
 
       - name: Cache NDK
         id: cache_ndk
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: /tmp/android-ndk-r21e
           key: android-ndk-${{ matrix.os }}-r21e
