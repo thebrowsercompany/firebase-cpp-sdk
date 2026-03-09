@@ -409,8 +409,8 @@ jobs:
 
       - name: Download Android NDK
         run: |
-          NDK_VERSION="r27d"
-          NDK_FILE="android-ndk-${NDK_VERSION}-linux.zip"
+          NDK_VERSION="r21e"
+          NDK_FILE="android-ndk-${NDK_VERSION}-linux-x86_64.zip"
           curl -L -o "${NDK_FILE}" "https://dl.google.com/android/repository/${NDK_FILE}"
           unzip -q "${NDK_FILE}"
           rm "${NDK_FILE}"
